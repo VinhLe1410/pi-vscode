@@ -67,7 +67,7 @@ See [.agents/docs/icons.md](.agents/docs/icons.md)
 - Terminal cleaned up on close, recreated on next command
 - CJS wrapper pattern allows `"type": "module"` while satisfying VS Code's `require()` loading
 - Pi binary auto-detected from common paths (`~/.bun/bin/pi`, `~/.local/bin/pi`, etc.) or configurable via `pi-vscode.path` setting
-- `Pi: Upgrade Pi and Packages` reuses the binary resolver, guesses the package manager from the discovered binary path, launches the corresponding global install command for `@mariozechner/pi-coding-agent@latest`, and chains `pi update` afterward
+- `Pi: Upgrade Pi and Packages` reuses the binary resolver, guesses the package manager from the discovered binary path, launches the corresponding global install command for `@earendil-works/pi-coding-agent@latest`, and chains `pi update` afterward
 - Terminal shell is the pi binary itself (not a shell running pi)
 - Every pi launch injects `PI_VSCODE_BRIDGE_URL`, `PI_VSCODE_BRIDGE_TOKEN`, and a per-terminal `PI_VSCODE_TERMINAL_ID` plus `--extension bridge/pi-vscode-bridge.js`
 - On `session_start`, the pi bridge reports `{terminalId, sessionFile}` via the `reportTerminalSession` RPC; VS Code stores the map in `workspaceState` under `pi-vscode.terminalSessions` and, on next activation, recreates each terminal with `--session <sessionFile>` so prior pi conversations resume across IDE reloads. Terminals closed explicitly (non-`Shutdown` exit reason) are removed from the map; entries whose session file no longer exists on disk are pruned on activation

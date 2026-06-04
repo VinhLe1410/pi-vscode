@@ -2,7 +2,7 @@
   "name": "pi-vscode",
   "displayName": "Pi Coding Agent",
   "version": "0.0.9",
-  "description": "VS Code extension for pi coding agent",
+  "description": "VS Code extension for Pi Coding Agent",
   "categories": [
     "AI",
     "Chat"
@@ -10,9 +10,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pi0/pi-vscode"
+    "url": "https://github.com/VinhLe1410/pi-vscode"
   },
-  "publisher": "pi0",
+  "publisher": "VinhLe1410",
   "type": "module",
   "main": "./dist/extension.cjs",
   "scripts": {
@@ -52,7 +52,7 @@
         "id": "pi-vscode.chat",
         "fullName": "Pi Coding Agent",
         "name": "pi",
-        "description": "Chat with Pi coding agent",
+        "description": "Chat with Pi Coding Agent",
         "isSticky": true
       }
     ],

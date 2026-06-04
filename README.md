@@ -1,8 +1,6 @@
 # pi-vscode
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/pi0.pi-vscode?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=pi0.pi-vscode) [![Open VSX](https://img.shields.io/open-vsx/v/pi0/pi-vscode?label=Open%20VSX&color=purple)](https://open-vsx.org/extension/pi0/pi-vscode)
-
-Minimal VS Code extension for [pi coding agent](https://pi.dev/).
+Maintained fork of the minimal VS Code extension for [Pi Coding Agent](https://pi.dev/), updated for the `@earendil-works/pi-coding-agent` package.
 
 ## Features
 
@@ -21,19 +19,16 @@ Minimal VS Code extension for [pi coding agent](https://pi.dev/).
 
 ## Requirements
 
-- `pi` CLI installed (`npm i -g @mariozechner/pi-coding-agent` or `bun i -g @mariozechner/pi-coding-agent`)
+- `pi` CLI installed (`npm install --global @earendil-works/pi-coding-agent` or `bun install --global @earendil-works/pi-coding-agent`)
 - An API key configured for at least one provider
 
 ## Install
 
-Available on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=pi0.pi-vscode) and [Open VSX](https://open-vsx.org/extension/pi0/pi-vscode):
+This fork can be installed from a locally packaged VSIX until it is published:
 
 ```bash
-# VS Code / Cursor
-ext install pi0.pi-vscode
-
-# Open VSX (VSCodium, etc.)
-ovsx get pi0.pi-vscode
+pnpm package
+code --install-extension pi-vscode-*.vsix
 ```
 
 ## Commands
