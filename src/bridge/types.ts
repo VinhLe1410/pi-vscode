@@ -1,5 +1,4 @@
-import type { Server } from "node:http";
-import * as vscode from "vscode";
+import type * as vscode from "vscode";
 
 export interface BridgeSelection {
   text: string;
@@ -38,26 +37,8 @@ export interface BridgeEditorInfo {
   isActive: boolean;
 }
 
-export interface BridgeNotification {
-  id: string;
-  type:
-    | "selection_changed"
-    | "diagnostics_changed"
-    | "active_editor_changed"
-    | "visible_editors_changed"
-    | "document_dirty_changed"
-    | "document_saved";
-  timestamp: number;
-  data: unknown;
-}
-
-export interface CachedCodeAction {
-  action: vscode.CodeAction | vscode.Command;
-  filePath: string;
-}
-
 export interface BridgeContext {
-  server: Server;
+  server: import("node:http").Server;
   url: string;
   token: string;
   dispose(): Promise<void>;
@@ -70,9 +51,5 @@ export interface RpcRequest {
 
 export interface BridgeState {
   latestSelection: BridgeSelection | undefined;
-  notifications: BridgeNotification[];
-  codeActions: Map<string, CachedCodeAction>;
-  enqueue(type: BridgeNotification["type"], data: unknown): void;
-  cacheCodeAction(action: vscode.CodeAction | vscode.Command, filePath: string): string;
   reportTerminalSession(terminalId: string, sessionFile: string): void;
 }

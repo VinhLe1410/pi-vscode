@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import * as vscode from "vscode";
 import { handleRpc } from "./handlers.ts";
-import { captureSelection, getEditorInfo } from "./serialize.ts";
+import { captureSelection } from "./serialize.ts";
 import { createBridgeState } from "./state.ts";
 import type { BridgeContext, RpcRequest } from "./types.ts";
 import { toErrorMessage } from "./utils.ts";
@@ -17,63 +17,15 @@ export async function createBridge(
     captureSelection(vscode.window.activeTextEditor),
     onTerminalSession,
   );
-  const dirtyState = new Map<string, boolean>();
   const token = randomUUID();
 
   context.subscriptions.push(
     vscode.window.onDidChangeTextEditorSelection((event) => {
       state.latestSelection = captureSelection(event.textEditor);
-      state.enqueue("selection_changed", state.latestSelection);
-    }),
-    vscode.languages.onDidChangeDiagnostics((event) => {
-      state.enqueue("diagnostics_changed", {
-        uris: event.uris.map((uri) => ({ filePath: uri.fsPath, fileUri: uri.toString() })),
-      });
     }),
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       const captured = captureSelection(editor);
       if (captured) state.latestSelection = captured;
-      state.enqueue("active_editor_changed", editor ? getEditorInfo(editor) : undefined);
-    }),
-    vscode.window.onDidChangeVisibleTextEditors((editors) => {
-      state.enqueue("visible_editors_changed", editors.map(getEditorInfo));
-    }),
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (event.document.uri.scheme !== "file") return;
-      const key = event.document.uri.toString();
-      const wasDirty = dirtyState.get(key) ?? false;
-      const isDirty = event.document.isDirty;
-      if (wasDirty === isDirty) return;
-      dirtyState.set(key, isDirty);
-      state.enqueue("document_dirty_changed", {
-        filePath: event.document.uri.fsPath,
-        fileUri: event.document.uri.toString(),
-        isDirty,
-        languageId: event.document.languageId,
-      });
-    }),
-    vscode.workspace.onDidSaveTextDocument((document) => {
-      if (document.uri.scheme !== "file") return;
-      const key = document.uri.toString();
-      const wasDirty = dirtyState.get(key) ?? false;
-      dirtyState.set(key, false);
-      if (wasDirty) {
-        state.enqueue("document_dirty_changed", {
-          filePath: document.uri.fsPath,
-          fileUri: document.uri.toString(),
-          isDirty: false,
-          languageId: document.languageId,
-        });
-      }
-      state.enqueue("document_saved", {
-        filePath: document.uri.fsPath,
-        fileUri: document.uri.toString(),
-        languageId: document.languageId,
-      });
-    }),
-    vscode.workspace.onDidCloseTextDocument((document) => {
-      if (document.uri.scheme !== "file") return;
-      dirtyState.delete(document.uri.toString());
     }),
   );
 

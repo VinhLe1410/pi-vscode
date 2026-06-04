@@ -134,36 +134,6 @@ export function serializeSymbol(symbol: vscode.DocumentSymbol | vscode.SymbolInf
   };
 }
 
-export function serializeCommand(command: vscode.Command) {
-  return {
-    title: command.title,
-    command: command.command,
-    tooltip: command.tooltip,
-    argumentCount: command.arguments?.length ?? 0,
-  };
-}
-
-export function serializeCodeAction(action: vscode.Command | vscode.CodeAction, actionId: string) {
-  if (!(action instanceof vscode.CodeAction)) {
-    return {
-      id: actionId,
-      kind: "command",
-      command: serializeCommand(action),
-    };
-  }
-  return {
-    id: actionId,
-    kind: "codeAction",
-    title: action.title,
-    disabled: action.disabled,
-    isPreferred: action.isPreferred,
-    kindLabel: action.kind?.value,
-    diagnostics: action.diagnostics?.map((diagnostic) => serializeDiagnostic(diagnostic)),
-    command: action.command ? serializeCommand(action.command) : undefined,
-    hasEdit: !!action.edit,
-  };
-}
-
 export function serializeHover(hover: vscode.Hover) {
   return {
     contents: hover.contents.map((content) => {

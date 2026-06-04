@@ -27,16 +27,6 @@ export function isAbsolutePath(filePath: string): boolean {
   return posix.isAbsolute(filePath) || win32.isAbsolute(filePath);
 }
 
-export function readSelection(
-  value: unknown,
-): { start: vscode.Position; end: vscode.Position } | undefined {
-  if (!value || typeof value !== "object") return undefined;
-  const start = readPosition((value as Record<string, unknown>).start);
-  const end = readPosition((value as Record<string, unknown>).end);
-  if (!start || !end) return undefined;
-  return { start, end };
-}
-
 export function readPosition(value: unknown): vscode.Position | undefined {
   if (!value || typeof value !== "object") return undefined;
   const line = readOptionalNumber((value as Record<string, unknown>).line);
@@ -61,52 +51,10 @@ export function readRequiredString(value: unknown, name: string): string {
   return value;
 }
 
-export function readOptionalBoolean(value: unknown): boolean | undefined {
-  return typeof value === "boolean" ? value : undefined;
-}
-
 export function readOptionalNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
-export function readWorkspaceEditEntries(value: unknown): Array<{
-  filePath: string;
-  range: { start: { line: number; character: number }; end: { line: number; character: number } };
-  newText: string;
-}> {
-  if (!Array.isArray(value) || value.length === 0)
-    throw new Error("Missing required parameter: edits");
-  return value.map((entry, index) => {
-    if (!entry || typeof entry !== "object")
-      throw new Error(`Invalid workspace edit at index ${index}`);
-    const record = entry as Record<string, unknown>;
-    const filePath = readRequiredString(record.filePath, `edits[${index}].filePath`);
-    const range = readSelection(record.range);
-    const newText = typeof record.newText === "string" ? record.newText : "";
-    if (!range) throw new Error(`Invalid workspace edit range at index ${index}`);
-    return {
-      filePath,
-      range: {
-        start: { line: range.start.line, character: range.start.character },
-        end: { line: range.end.line, character: range.end.character },
-      },
-      newText,
-    };
-  });
-}
-
 export function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-export function createRange(range: {
-  start: { line: number; character: number };
-  end: { line: number; character: number };
-}) {
-  return new vscode.Range(
-    range.start.line,
-    range.start.character,
-    range.end.line,
-    range.end.character,
-  );
 }
