@@ -6,7 +6,13 @@ import { TERMINAL_TITLE } from "./constants.ts";
 import { createPiEnvironment, createPiShellArgs, findPiBinary, upgradePiBinary } from "./pi.ts";
 import { createPackagesViewProvider } from "./packages.ts";
 import { createSessionTracker } from "./sessions.ts";
-import { buildOpenWithFileContext, createNewTerminal } from "./terminal.ts";
+import {
+  buildOpenWithFileContext,
+  createNewTerminal,
+  getConfiguredTerminalLocation,
+  showPiTerminal,
+  type PiTerminalLocation,
+} from "./terminal.ts";
 
 let extensionUri: vscode.Uri;
 let bridgeConfig: { url: string; token: string } | undefined;
@@ -33,6 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const openTerminal = async (
     extraArgs?: string[],
     contextLines?: string[],
+    terminalLocation?: PiTerminalLocation,
   ): Promise<vscode.Terminal | undefined> => {
     const terminalId = randomUUID();
     const terminal = await createNewTerminal({
@@ -41,6 +48,7 @@ export async function activate(context: vscode.ExtensionContext) {
       extraArgs,
       contextLines,
       terminalId,
+      terminalLocation,
     });
     if (terminal) sessions.track(terminal, terminalId);
     return terminal;
@@ -71,11 +79,15 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidCloseTerminal((terminal) => sessions.onClose(terminal)),
     vscode.commands.registerCommand("pi-vscode.open", async () => {
       const terminal = await openTerminal();
-      terminal?.show();
+      if (terminal) await showPiTerminal(terminal);
+    }),
+    vscode.commands.registerCommand("pi-vscode.openInTerminalPanel", async () => {
+      const terminal = await openTerminal(undefined, undefined, "panel");
+      if (terminal) await showPiTerminal(terminal, "panel");
     }),
     vscode.commands.registerCommand("pi-vscode.openWithFile", async () => {
       const terminal = await openTerminal(undefined, buildOpenWithFileContext());
-      terminal?.show();
+      if (terminal) await showPiTerminal(terminal);
     }),
     vscode.commands.registerCommand("pi-vscode.sendSelection", async () => {
       const editor = vscode.window.activeTextEditor;
@@ -83,12 +95,12 @@ export async function activate(context: vscode.ExtensionContext) {
       const selection = editor.document.getText(editor.selection);
       if (!selection) return;
       const terminal = await openTerminal([selection]);
-      terminal?.show();
+      if (terminal) await showPiTerminal(terminal);
     }),
     vscode.commands.registerCommand("pi-vscode.openInNewWindow", async () => {
-      const terminal = await openTerminal();
+      const terminal = await openTerminal(undefined, undefined, "editor");
       if (!terminal) return;
-      terminal.show();
+      await showPiTerminal(terminal, "editor");
       await vscode.commands.executeCommand("workbench.action.moveEditorToNewWindow");
     }),
     vscode.commands.registerCommand("pi-vscode.upgrade", upgradePiBinary),
@@ -106,6 +118,10 @@ export async function activate(context: vscode.ExtensionContext) {
           shellArgs: createPiShellArgs(extensionUri),
           cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
           env: { ...baseEnv, PI_VSCODE_TERMINAL_ID: terminalId },
+          location:
+            getConfiguredTerminalLocation() === "panel"
+              ? vscode.TerminalLocation.Panel
+              : vscode.TerminalLocation.Editor,
           iconPath: logoIcon,
         });
       },

@@ -4,7 +4,7 @@ Maintained fork of the minimal VS Code extension for [Pi Coding Agent](https://p
 
 ## Features
 
-- **Terminal-based** — Opens pi as an integrated terminal with full TUI/PTY support (opens beside the editor)
+- **Terminal-based** — Opens pi as an integrated terminal with full TUI/PTY support (terminal panel by default, configurable to editor area)
 - **VS Code bridge** — Bundles a pi extension and local bridge so pi can query live editor state
 - **Editor awareness** — pi can inspect the active editor, current/latest selection, open editors, workspace folders, and VS Code diagnostics (LSP / lint / type errors)
 - **Live VS Code footer status** — pi's terminal UI shows the active VS Code file, cursor/selection, language, dirty marker, and diagnostic counts in its bottom status area
@@ -35,7 +35,8 @@ code --install-extension pi-vscode-*.vsix
 
 | Command                       | Keybinding       | Description                                                                              |
 | ----------------------------- | ---------------- | ---------------------------------------------------------------------------------------- |
-| `Pi: Open`                    | `Ctrl+Alt+3`     | Open or focus the pi terminal                                                            |
+| `Pi: Open`                    | `Ctrl+Alt+3`     | Open or focus the pi terminal using `pi-vscode.terminalLocation`                         |
+| `Pi: Open in Terminal Panel`  | —                | Open pi in the terminal panel, regardless of the configured default                      |
 | `Pi: Open with File`          | Editor title bar | Open pi with current file context                                                        |
 | `Pi: Send Selection`          | —                | Send selected text to pi terminal                                                        |
 | `Pi: Upgrade Pi and Packages` | —                | Find the pi binary, infer its package manager, upgrade pi globally, then run `pi update` |
@@ -101,8 +102,9 @@ These bridge tools let pi inspect selections, diagnostics, symbols, definitions,
 
 ## Configuration
 
-| Setting          | Default | Description                                             |
-| ---------------- | ------- | ------------------------------------------------------- |
-| `pi-vscode.path` | `""`    | Absolute path to the pi binary (auto-detected if empty) |
+| Setting                      | Default   | Description                                                                                                       |
+| ---------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `pi-vscode.path`             | `""`      | Absolute path to the pi binary (auto-detected if empty)                                                           |
+| `pi-vscode.terminalLocation` | `"panel"` | Where Pi terminals open: `"panel"` to avoid editor-tab replacement, or `"editor"` for the old split-editor layout |
 
 On Windows, an extensionless `pi-vscode.path` is auto-probed for `.cmd`/`.exe`/`.ps1` variants so extensionless npm shims work out of the box.

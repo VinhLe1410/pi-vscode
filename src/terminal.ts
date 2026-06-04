@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { TERMINAL_TITLE } from "./constants.ts";
 import { createPiEnvironment, createPiShellArgs, ensurePiBinary } from "./pi.ts";
 
+export type PiTerminalLocation = "editor" | "panel";
+
 export async function createNewTerminal(options: {
   extensionUri: vscode.Uri;
   bridgeConfig?: { url: string; token: string };
@@ -9,12 +11,13 @@ export async function createNewTerminal(options: {
   contextLines?: string[];
   terminalId?: string;
   sessionFile?: string;
+  terminalLocation?: PiTerminalLocation;
 }): Promise<vscode.Terminal | undefined> {
   const piPath = await ensurePiBinary();
   if (!piPath) return undefined;
 
   const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  const viewColumn = findPiColumn() ?? findUnusedColumn() ?? vscode.ViewColumn.Beside;
+  const terminalLocation = options.terminalLocation ?? getConfiguredTerminalLocation();
   const extraArgs = options.sessionFile
     ? ["--session", options.sessionFile, ...(options.extraArgs ?? [])]
     : options.extraArgs;
@@ -28,11 +31,11 @@ export async function createNewTerminal(options: {
     ? { ...baseEnv, PI_VSCODE_TERMINAL_ID: options.terminalId }
     : baseEnv;
 
-  const terminal = vscode.window.createTerminal({
+  return vscode.window.createTerminal({
     name: TERMINAL_TITLE,
     shellPath: piPath,
     shellArgs: shellArgs.length > 0 ? shellArgs : undefined,
-    location: { viewColumn },
+    location: createTerminalLocation(terminalLocation),
     isTransient: true,
     cwd,
     env,
@@ -41,9 +44,32 @@ export async function createNewTerminal(options: {
       dark: vscode.Uri.joinPath(options.extensionUri, "assets", "logo.svg"),
     },
   });
+}
 
-  void vscode.commands.executeCommand("workbench.action.lockEditorGroup");
-  return terminal;
+export function getConfiguredTerminalLocation(): PiTerminalLocation {
+  const value = vscode.workspace.getConfiguration("pi-vscode").get<string>("terminalLocation");
+  return value === "editor" ? "editor" : "panel";
+}
+
+export async function showPiTerminal(
+  terminal: vscode.Terminal,
+  terminalLocation = getConfiguredTerminalLocation(),
+): Promise<void> {
+  terminal.show();
+  if (terminalLocation === "editor") await lockActiveEditorGroup();
+}
+
+function createTerminalLocation(
+  terminalLocation: PiTerminalLocation,
+): vscode.TerminalOptions["location"] {
+  if (terminalLocation === "panel") return vscode.TerminalLocation.Panel;
+  const viewColumn = findPiColumn() ?? findUnusedColumn() ?? vscode.ViewColumn.Beside;
+  return { viewColumn };
+}
+
+async function lockActiveEditorGroup(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  await vscode.commands.executeCommand("workbench.action.lockEditorGroup");
 }
 
 export function buildOpenWithFileContext(): string[] {

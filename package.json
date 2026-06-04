@@ -1,7 +1,7 @@
 {
   "name": "pi-vscode",
   "displayName": "Pi Coding Agent",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "VS Code extension for Pi Coding Agent",
   "categories": [
     "AI",
@@ -74,6 +74,14 @@
         }
       },
       {
+        "command": "pi-vscode.openInTerminalPanel",
+        "title": "Pi: Open in Terminal Panel",
+        "icon": {
+          "light": "assets/logo-light.svg",
+          "dark": "assets/logo.svg"
+        }
+      },
+      {
         "command": "pi-vscode.sendSelection",
         "title": "Pi: Send Selection"
       },
@@ -138,6 +146,19 @@
           "type": "string",
           "default": "",
           "description": "Absolute path to the pi binary. Leave empty for auto-detection."
+        },
+        "pi-vscode.terminalLocation": {
+          "type": "string",
+          "enum": [
+            "panel",
+            "editor"
+          ],
+          "default": "panel",
+          "enumDescriptions": [
+            "Open Pi in the VS Code terminal panel so editor tabs cannot replace it.",
+            "Open Pi as a terminal editor beside your files."
+          ],
+          "description": "Where Pi terminals should open. Use panel to keep Pi out of editor groups."
         }
       }
     },

@@ -4,7 +4,7 @@
 
 ## Architecture
 
-- **Terminal-based**: Opens pi in a VS Code integrated terminal with full TUI/PTY support
+- **Terminal-based**: Opens pi in a VS Code integrated terminal with full TUI/PTY support; defaults to the terminal panel and can be configured to the editor area
 - **Local IDE bridge**: VS Code starts a localhost HTTP bridge with an auth token and injects it into each pi terminal via env vars
 - **Bundled pi extension**: `bridge/pi-vscode-bridge.js` is passed to pi via `--extension` so the agent can call back into VS Code as custom tools
 - **Minimal**: Small TypeScript extension host plus one bundled pi bridge script, no framework dependencies
@@ -55,7 +55,8 @@ See [.agents/docs/icons.md](.agents/docs/icons.md)
 
 ## Commands
 
-- `Pi: Open` (`Ctrl+Alt+3`) — Opens/focuses the pi terminal
+- `Pi: Open` (`Ctrl+Alt+3`) — Opens/focuses the pi terminal using `pi-vscode.terminalLocation`
+- `Pi: Open in Terminal Panel` — Opens pi in the terminal panel, regardless of the configured default
 - `Pi: Open with File` — Opens pi terminal and sends current file path (with selection range if any); also in editor title bar menu
 - `Pi: Send Selection` — Sends editor selection text to the pi terminal
 - `Pi: Upgrade Pi and Packages` — Finds the resolved pi binary, infers npm/bun/pnpm/yarn from its path (prompting if ambiguous), runs the matching global install/update command in a terminal, then runs `pi update` to update installed pi extensions/packages
@@ -63,12 +64,13 @@ See [.agents/docs/icons.md](.agents/docs/icons.md)
 
 ## Notes
 
-- One pi terminal profile per window; new launches reuse the same title and colocate beside the editor
+- One pi terminal profile per window; new launches use `pi-vscode.terminalLocation` (`panel` by default, `editor` for the old beside-editor layout)
 - Terminal cleaned up on close, recreated on next command
 - CJS wrapper pattern allows `"type": "module"` while satisfying VS Code's `require()` loading
 - Pi binary auto-detected from common paths (`~/.bun/bin/pi`, `~/.local/bin/pi`, etc.) or configurable via `pi-vscode.path` setting
 - `Pi: Upgrade Pi and Packages` reuses the binary resolver, guesses the package manager from the discovered binary path, launches the corresponding global install command for `@earendil-works/pi-coding-agent@latest`, and chains `pi update` afterward
 - Terminal shell is the pi binary itself (not a shell running pi)
+- Editor-mode terminals are shown before `workbench.action.lockEditorGroup` runs so the lock applies to the Pi editor group instead of the previously active group
 - Every pi launch injects `PI_VSCODE_BRIDGE_URL`, `PI_VSCODE_BRIDGE_TOKEN`, and a per-terminal `PI_VSCODE_TERMINAL_ID` plus `--extension bridge/pi-vscode-bridge.js`
 - On `session_start`, the pi bridge reports `{terminalId, sessionFile}` via the `reportTerminalSession` RPC; VS Code stores the map in `workspaceState` under `pi-vscode.terminalSessions` and, on next activation, recreates each terminal with `--session <sessionFile>` so prior pi conversations resume across IDE reloads. Terminals closed explicitly (non-`Shutdown` exit reason) are removed from the map; entries whose session file no longer exists on disk are pruned on activation
 - The bundled pi bridge extension refreshes a `ctx.ui.setStatus("pi-vscode", ...)` footer entry every 1.5 seconds so the bottom of pi's TUI reflects the current VS Code editor context
